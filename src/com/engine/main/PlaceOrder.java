@@ -12,6 +12,10 @@ import com.engine.model.Promotion;
 import com.engine.service.PromoListManager;
 import com.engine.service.PromotionCalculator;
 
+/**
+ * @author apiratla
+ *
+ */
 public class PlaceOrder {
 	public static void main(String[] args) {
 		// Initialize Promos
@@ -44,7 +48,8 @@ public class PlaceOrder {
 		// Calculating the price after choosing the best promo
 		ordersList.forEach(order -> {
 
-			Double maxDiscount = list.getPromotionsList().stream().map(promo -> PlaceOrder.getBestPrice(order, promo))
+			Double maxDiscount = list.getPromotionsList().stream()
+					.map(promo -> PlaceOrder.getBestPrice(order, promo))
 					.min(Double::compare).get();
 			System.out.println(
 					"Max Dis after applying single best promo code to " + order.getOrderId() + " is " + maxDiscount);

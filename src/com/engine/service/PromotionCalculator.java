@@ -14,7 +14,16 @@ public enum PromotionCalculator implements ICalPrice {
 		@Override
 		public double calculatePrice(Order order, Promotion promo) {
 			long aCount = getACount(order);
-			double aPrice =  ((aCount / 3) * promo.getPromoPrice() + (aCount % 3) * Product.getPriceById("A"));
+			double aPrice  = 0;
+			Integer minSKUQuanity = promo.getDiscountSKU().get("A") != null ? promo.getDiscountSKU().get("A") : null;
+			if(minSKUQuanity != null && (aCount % minSKUQuanity == 0)) {
+				aPrice = (aCount/minSKUQuanity)*promo.getPromoPrice();
+			}else if (aCount < minSKUQuanity) {
+				aPrice = aCount*Product.getPriceById("A");
+				
+			}else {
+				aPrice =  ((aCount / 3) * promo.getPromoPrice() + (aCount % 3) * Product.getPriceById("A"));
+			}
 			return aPrice+getBCount(order)*Product.getPriceById("B")+
 					getCCount(order)*Product.getPriceById("C")+
 					getDCount(order)*Product.getPriceById("D");
@@ -34,12 +43,15 @@ public enum PromotionCalculator implements ICalPrice {
 		 */
 		@Override
 		public double calculatePrice(Order order, Promotion promo) {
-			long bCount = order.getProducts().stream().filter((product) -> product.getpId().equals("B")).count();
+			long bCount = getBCount(order);
 			double bPrice = 0;
-			Integer discountSku = promo.getDiscountSKU().get("B") != null ? promo.getDiscountSKU().get("B") : null;
-			if(discountSku != null && bCount % discountSku == 0) {
-				bPrice = (bCount / discountSku) * promo.getPromoPrice();
-			}else {
+			Integer minSKUQuantity = promo.getDiscountSKU().get("B") != null ? promo.getDiscountSKU().get("B") : null;
+			if(minSKUQuantity != null && bCount % minSKUQuantity == 0) {
+				bPrice = (bCount / minSKUQuantity) * promo.getPromoPrice();
+			} else if( bCount < minSKUQuantity) {
+				bPrice = bCount * Product.getPriceById("B");
+			}
+			else {
 				bPrice =  ((bCount / 2) * promo.getPromoPrice() + (bCount % 3) * Product.getPriceById("B"));
 			}
 			return  getACount(order)*Product.getPriceById("A") + 
@@ -51,8 +63,8 @@ public enum PromotionCalculator implements ICalPrice {
 	PROMO_CD {
 		@Override
 		public double calculatePrice(Order order, Promotion promo) {
-			long cCount = order.getProducts().stream().filter((product) -> product.getpId().equals("C")).count();
-			long dCount = order.getProducts().stream().filter((product) -> product.getpId().equals("D")).count();
+			long cCount = getCCount(order);
+			long dCount = getDCount(order);
 			double cPrice = 0;
 			if(cCount != 0 && cCount < dCount) {
 				cPrice = ((cCount * promo.getPromoPrice())+dCount * Product.getPriceById("D"));
